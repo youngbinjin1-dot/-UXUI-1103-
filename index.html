@@ -4,29 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>유저버스 회원가입</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap">
 <style>
+  /* DOS 픽셀 폰트 — github.com/hurss/fonts (MIT, © Damheo Lee) 한글·영문 서브셋 */
+  @font-face{font-family:"DOSGothic";src:url("fonts/DOSGothic.woff") format("woff");font-display:swap}
+  @font-face{font-family:"DOSIyagi";src:url("fonts/DOSIyagiBoldface.woff") format("woff");font-display:swap}
   :root{
     --bg-page:#0D0D0D; --bg-base:#1C1C1C; --bg-subtle:#151515; --bg-elevated:#2A2A2A; --bg-input:#121212;
     --pink-300:#FF7AB8; --pink:#FF2D95; --pink-700:#C4006B; --pink-tint:rgba(255,45,149,.14);
     --text-primary:#FFFFFF; --text-secondary:#D6D6D6; --text-tertiary:#9A9A9A; --text-placeholder:#666; --text-disabled:#4D4D4D;
     --border-default:#3A3A3A; --border-strong:#5A5A5A;
     --error:#FF6A3D; --success:#4DFFC3;
-    --font-px-en:"Silkscreen","Galmuri11",monospace;
-    --font-px-ko:"Galmuri11","Galmuri9","Noto Sans KR",sans-serif;
-    --font-px-title:"Galmuri14","Galmuri11","Noto Sans KR",sans-serif;
+    --font-px-en:"DOSIyagi","DOSGothic",monospace;
+    --font-px-ko:"DOSGothic","Noto Sans KR",sans-serif;
+    --font-px-title:"DOSIyagi","DOSGothic",sans-serif;
     --xs:4px; --sm:8px; --md:12px; --lg:20px; --xl:28px;
     --ease:cubic-bezier(.16,1,.3,1);
-    --px:polygon(4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 2px) calc(100% - 2px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px),0 4px,2px 4px,2px 2px,4px 2px);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg-page);font-family:var(--font-px-ko);color:var(--text-primary);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:var(--xl) 16px 44px;gap:var(--lg);-webkit-font-smoothing:none}
   .top{text-align:center}
-  .top h1{font-family:var(--font-px-en);font-size:20px;letter-spacing:.04em}
+  .top h1{font-family:var(--font-px-en);font-size:24px;letter-spacing:.04em}
   .top h1 em{font-style:normal;color:var(--pink)}
   .top p{font-size:12px;color:var(--text-tertiary);margin-top:var(--xs)}
-  .sound{font:inherit;font-size:12px;color:var(--pink);background:transparent;border:2px solid var(--pink);clip-path:var(--px);padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .sound{font:inherit;font-size:12px;color:var(--pink);background:transparent;border:2px solid var(--pink);padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px}
   .sound:hover{background:var(--pink-tint)}
   .sound.off{color:var(--text-tertiary);border-color:var(--border-default)}
 
@@ -34,7 +34,7 @@
   .phone{width:375px;max-width:100%;height:812px;border:10px solid #000;border-radius:44px;overflow:hidden;position:relative;background:var(--bg-base);box-shadow:0 0 0 1px #2A2A2A,0 16px 48px rgba(0,0,0,.7)}
   .status{position:absolute;top:0;left:0;right:0;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--xl);font-size:14px;z-index:5}
   .status .r{display:flex;gap:6px;align-items:center;font-size:12px}
-  .bat{background:#fff;color:#000;padding:0 5px;font-size:11px;clip-path:var(--px)}
+  .bat{background:#fff;color:#000;padding:0 5px;font-size:11px;}
   .screen{position:absolute;inset:48px 0 0 0;display:flex;flex-direction:column;transition:transform 320ms var(--ease),opacity 320ms;z-index:1}
   .screen.hide-r{transform:translateX(100%);opacity:0;pointer-events:none}
   .screen.hide-l{transform:translateX(-30%);opacity:0;pointer-events:none}
@@ -42,9 +42,9 @@
   /* header: nav + gauge */
   .head{flex-shrink:0;padding:0 var(--lg);display:flex;flex-direction:column;gap:var(--sm)}
   .nav{height:44px;display:flex;align-items:center;justify-content:space-between}
-  .nav .back{background:none;border:0;cursor:pointer;padding:6px;display:flex;clip-path:var(--px)}
+  .nav .back{background:none;border:0;cursor:pointer;padding:6px;display:flex;}
   .nav .back:hover{background:var(--pink-tint)}
-  .logo{font-family:var(--font-px-en);font-size:13px;letter-spacing:.06em;color:var(--text-secondary);display:flex;align-items:center;gap:6px}
+  .logo{font-family:var(--font-px-en);font-size:14px;letter-spacing:.06em;color:var(--text-secondary);display:flex;align-items:center;gap:6px}
   .logo i{color:var(--pink);font-style:normal}
   .gauge{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;height:10px}
   .gauge b{background:var(--bg-elevated);transition:background 120ms}
@@ -57,34 +57,35 @@
   .hero svg.orbit{position:absolute;right:-56px;top:-30px;opacity:.45;pointer-events:none}
   .hero svg.pstar{position:absolute;right:20px;top:-2px;pointer-events:none;animation:bob 2.4s ease-in-out infinite}
   @keyframes bob{50%{transform:translateY(-4px)}}
-  .eyebrow{display:block;font-family:var(--font-px-en);font-size:11px;letter-spacing:.12em;color:var(--pink);margin-bottom:var(--sm)}
-  .hero h2,.done h2{font-family:var(--font-px-title);font-size:26px;font-weight:400;line-height:1.3;position:relative}
-  .hero p{font-size:14px;color:var(--text-secondary);margin-top:var(--sm);line-height:1.6;position:relative}
+  .eyebrow{display:block;font-family:var(--font-px-en);font-size:13px;letter-spacing:.08em;color:var(--pink);margin-bottom:var(--sm)}
+  .hero h2,.done h2{font-family:var(--font-px-title);font-size:32px;font-weight:400;line-height:1.25;position:relative}
+  .hero p{font-size:16px;color:var(--text-secondary);margin-top:var(--sm);line-height:1.6;position:relative}
 
   /* ---------- Game field ---------- */
   .field{display:flex;flex-direction:column;gap:var(--sm)}
-  .lab{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text-secondary)}
-  .lab span::before{content:"▶";color:var(--pink);margin-right:6px;opacity:0;display:inline-block;width:0;transition:width 120ms,opacity 120ms}
+  .lab{display:flex;align-items:center;justify-content:space-between;font-size:14px;color:var(--text-secondary)}
+  .lab span::before{content:"▶";font-family:var(--font-px-title);color:var(--pink);margin-right:6px;opacity:0;display:inline-block;width:0;transition:width 120ms,opacity 120ms}
   .field.focus .lab span::before{opacity:1;width:auto;animation:blink 800ms steps(2) infinite}
   @keyframes blink{50%{opacity:0}}
-  .badge{font-family:var(--font-px-en);font-size:10px;letter-spacing:.06em;padding:2px 6px;clip-path:var(--px);display:none}
+  .badge{font-family:var(--font-px-en);font-size:11px;letter-spacing:.06em;padding:2px 6px;display:none}
   .badge.ok{display:inline-block;background:var(--success);color:#0D0D0D}
   .badge.err{display:inline-block;background:var(--error);color:#0D0D0D}
-  .input{height:50px;background:var(--bg-input);border:2px solid var(--border-default);clip-path:var(--px);display:flex;align-items:center;padding:0 var(--sm) 0 var(--md);gap:var(--sm);transition:border-color 120ms,background 120ms;position:relative}
+  .input{height:50px;background:var(--bg-input);border:2px solid var(--border-default);display:flex;align-items:center;padding:0 var(--sm) 0 var(--md);gap:var(--sm);transition:border-color 120ms,background 120ms;position:relative}
   .input:hover:not(.err){border-color:var(--border-strong)}
   .field.focus .input:not(.err){border-color:var(--pink);background:#170F13}
   .input.ok{border-color:var(--success)}
   .input.err{border-color:var(--error)}
-  .input input{flex:1;background:none;border:0;outline:0;color:var(--text-primary);font:inherit;font-size:15px;min-width:0;caret-color:var(--pink)}
+  .input input{flex:1;background:none;border:0;outline:0;color:var(--text-primary);font:inherit;font-size:16px;min-width:0;caret-color:var(--pink)}
   .input input::placeholder{color:var(--text-placeholder)}
-  .input .sel{flex:1;font-size:15px}
+  .input .sel{flex:1;font-size:16px}
   .count{font-family:var(--font-px-en);font-size:11px;color:var(--text-tertiary)}
   .count.over{color:var(--error)}
-  .icon-btn{background:none;border:0;cursor:pointer;display:flex;padding:5px;clip-path:var(--px);transition:background 120ms}
+  .icon-btn{background:none;border:0;cursor:pointer;display:flex;padding:5px;transition:background 120ms}
   .icon-btn:hover{background:var(--pink-tint)}
-  .dice{display:flex;align-items:center;gap:4px;font:inherit;font-size:12px;color:#0D0D0D;background:var(--pink);border:0;height:30px;padding:0 10px;cursor:pointer;clip-path:var(--px);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);white-space:nowrap;transition:transform 80ms}
+  .dice{display:flex;align-items:center;gap:4px;font:inherit;font-size:12px;color:#0D0D0D;background:var(--pink);border:0;height:30px;padding:0 10px;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);white-space:nowrap;transition:transform 80ms}
   .dice:hover{background:var(--pink-300)}
   .dice:active{transform:translateY(1px);box-shadow:inset 0 -1px 0 rgba(0,0,0,.25)}
+  .dice[hidden]{display:none}
   .dice.roll svg{animation:spin 300ms linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .input.rolling input{color:var(--pink-300)}
@@ -93,7 +94,7 @@
 
   /* quest checklist */
   .quest{display:flex;flex-wrap:wrap;gap:6px}
-  .quest span{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-tertiary);background:var(--bg-subtle);border:1px solid var(--border-default);padding:3px 8px 3px 6px;clip-path:var(--px);transition:color 120ms,border-color 120ms,background 120ms}
+  .quest span{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-tertiary);background:var(--bg-subtle);border:1px solid var(--border-default);padding:3px 8px 3px 6px;transition:color 120ms,border-color 120ms,background 120ms}
   .quest span i{width:8px;height:8px;background:var(--border-strong);display:inline-block;transition:background 120ms}
   .quest span.ok{color:var(--success);border-color:rgba(77,255,195,.4)}
   .quest span.ok i{background:var(--success)}
@@ -101,7 +102,7 @@
   .quest span.bad i{background:var(--error)}
 
   /* error bubble (game dialog) */
-  .bubble{position:relative;background:#2A1510;border:2px solid var(--error);clip-path:var(--px);padding:var(--sm) var(--md);font-size:13px;line-height:1.5;color:#FFD9CC;display:flex;gap:var(--sm);align-items:flex-start;animation:pop-in 220ms var(--ease)}
+  .bubble{position:relative;background:#2A1510;border:2px solid var(--error);padding:var(--sm) var(--md);font-size:13px;line-height:1.5;color:#FFD9CC;display:flex;gap:var(--sm);align-items:flex-start;animation:pop-in 220ms var(--ease)}
   .bubble b{color:var(--error);font-weight:400}
   .bubble small{display:block;color:var(--text-tertiary);font-size:12px}
   .bubble[hidden],.helper[hidden],.notice[hidden]{display:none}
@@ -114,7 +115,7 @@
   @keyframes xp{from{opacity:0;transform:translateY(6px)}20%{opacity:1}to{opacity:0;transform:translateY(-22px)}}
 
   /* ---------- Buttons ---------- */
-  .btn{height:52px;width:100%;border:0;clip-path:var(--px);font-family:var(--font-px-ko);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:var(--sm);box-shadow:inset 0 -4px 0 rgba(0,0,0,.28);transition:transform 80ms,background 120ms,color 120ms}
+  .btn{height:52px;width:100%;border:0;font-family:var(--font-px-title);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:var(--sm);box-shadow:inset 0 -4px 0 rgba(0,0,0,.28);transition:transform 80ms,background 120ms,color 120ms}
   .btn.primary{background:var(--pink);color:#0D0D0D}
   .btn.primary:hover:not(:disabled){background:var(--pink-300)}
   .btn.ghost{background:var(--bg-input);color:var(--pink);box-shadow:inset 0 0 0 2px var(--pink),inset 0 -4px 0 rgba(255,45,149,.25)}
@@ -130,7 +131,7 @@
   .cta{padding:var(--md) var(--lg) var(--xl);flex-shrink:0}
 
   /* ---------- Toggles (captcha / agree) ---------- */
-  .tog{display:flex;align-items:flex-start;gap:var(--md);padding:var(--md) var(--md);background:var(--bg-subtle);border:2px solid var(--border-default);clip-path:var(--px);cursor:pointer;user-select:none;font-size:14px;line-height:1.6;transition:border-color 120ms,background 120ms;position:relative}
+  .tog{display:flex;align-items:flex-start;gap:var(--md);padding:var(--md) var(--md);background:var(--bg-subtle);border:2px solid var(--border-default);cursor:pointer;user-select:none;font-size:14px;line-height:1.6;transition:border-color 120ms,background 120ms;position:relative}
   .tog:hover{border-color:var(--pink);background:#1A1418}
   .tog.on{border-color:rgba(255,45,149,.6)}
   .tog .sec{margin-left:auto;font-size:11px;color:var(--text-tertiary);display:flex;flex-direction:column;align-items:center;gap:2px;align-self:center}
@@ -144,19 +145,19 @@
   @keyframes pop{45%{transform:scale(1.25)}}
 
   /* ---------- Notice cards ---------- */
-  .notice{border:2px solid rgba(255,45,149,.5);background:#1F1419;clip-path:var(--px);padding:var(--md);display:flex;gap:var(--md);font-size:13px;line-height:1.6;animation:pop-in 240ms var(--ease);position:relative}
+  .notice{border:2px solid rgba(255,45,149,.5);background:#1F1419;padding:var(--md);display:flex;gap:var(--md);font-size:13px;line-height:1.6;animation:pop-in 240ms var(--ease);position:relative}
   .notice .ic{width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--pink-tint)}
-  .notice b{display:block;font-family:var(--font-px-title);font-size:16px;font-weight:400;color:var(--text-primary);margin-bottom:2px}
+  .notice b{display:block;font-family:var(--font-px-title);font-size:17px;font-weight:400;color:var(--text-primary);margin-bottom:2px}
   .notice p{color:var(--text-secondary)}
   .notice .acts{display:flex;align-items:center;gap:var(--md);margin-top:var(--sm)}
-  .mini{font:inherit;font-size:13px;height:32px;padding:0 var(--md);border:0;background:var(--pink);color:#0D0D0D;cursor:pointer;clip-path:var(--px);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);white-space:nowrap}
+  .mini{font:inherit;font-size:13px;height:32px;padding:0 var(--md);border:0;background:var(--pink);color:#0D0D0D;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);white-space:nowrap}
   .mini:hover{background:var(--pink-300)}
   .mini:active{transform:translateY(1px)}
   .lnk{font:inherit;font-size:12px;color:var(--pink-300);background:none;border:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
   .lnk:hover{color:#fff}
   .notice.welcome{border-color:var(--pink);background:linear-gradient(135deg,#2A0F1E,#1F1419)}
   .notice.welcome b{color:var(--pink-300)}
-  .notice.welcome::after{content:"✦ ✧ ✦";position:absolute;right:10px;top:6px;color:var(--pink);font-size:10px;letter-spacing:2px;animation:blink 1.2s steps(2) infinite}
+  .notice.welcome::after{content:"★ ☆ ★";position:absolute;right:10px;top:6px;color:var(--pink);font-size:10px;letter-spacing:2px;animation:blink 1.2s steps(2) infinite}
   .welcome-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 85% 0%,rgba(255,45,149,.2),transparent 55%);opacity:0;transition:opacity 500ms}
   .rejoin .welcome-glow{opacity:1}
 
@@ -167,7 +168,7 @@
   .confetti{position:absolute;width:6px;height:6px;pointer-events:none;animation:fall 1100ms var(--ease) forwards}
   @keyframes fall{to{transform:translate(var(--dx),var(--dy));opacity:0}}
 
-  .toast{position:absolute;left:50%;bottom:120px;transform:translate(-50%,10px);background:var(--bg-elevated);color:var(--text-primary);font-size:12px;padding:10px 14px;border:2px solid var(--pink);clip-path:var(--px);opacity:0;transition:.2s;pointer-events:none;white-space:nowrap;z-index:9}
+  .toast{position:absolute;left:50%;bottom:120px;transform:translate(-50%,10px);background:var(--bg-elevated);color:var(--text-primary);font-size:12px;padding:10px 14px;border:2px solid var(--pink);opacity:0;transition:.2s;pointer-events:none;white-space:nowrap;z-index:9}
   .toast.show{opacity:1;transform:translate(-50%,0)}
   .tip{font-size:12px;color:var(--text-tertiary);text-align:center;line-height:1.8}
   .tip b{color:var(--pink-300);font-weight:400}
@@ -176,7 +177,7 @@
 <body>
 <div class="top">
   <h1>USER<em>VERSE</em> · SIGN UP</h1>
-  <p>UI 컨셉 데모 · 입력값은 어디에도 전송되지 않아요</p>
+  <p>UI 컨셉 데모 · 입력값은 어디에도 전송되지 않아요 · 폰트: DOS고딕·도스이야기(MIT)</p>
 </div>
 <button class="sound" id="soundBtn">♪ <span>사운드 켜짐</span></button>
 
@@ -188,7 +189,7 @@
     <div class="content first">
       <div class="hero">
         ${ORBIT}${PSTAR}
-        <span class="eyebrow">✦ PLAYER LOGIN</span>
+        <span class="eyebrow">★ PLAYER LOGIN</span>
         <h2>다시 만나서<br>반가워요</h2>
         <p>유저버스 계정으로 로그인해 주세요.</p>
       </div>
@@ -212,10 +213,10 @@
   <!-- 회원가입 -->
   <section class="screen hide-r" data-s="signup">
     <div class="welcome-glow"></div>
-    <div class="head"><div class="nav"><button class="back" data-back="login" aria-label="뒤로">${BACK}</button><span class="logo"><i>✦</i>USERVERSE</span></div><div class="gauge"></div></div>
+    <div class="head"><div class="nav"><button class="back" data-back="login" aria-label="뒤로">${BACK}</button><span class="logo"><i>★</i>USERVERSE</span></div><div class="gauge"></div></div>
     <div class="content">
       <div class="hero">
-        <span class="eyebrow" id="suEyebrow">✦ NEW PLAYER</span>
+        <span class="eyebrow" id="suEyebrow">★ NEW PLAYER</span>
         <h2 id="suTitle">계정 만들기</h2>
         <p id="suDesc">몇 가지만 입력하면<br>바로 시작할 수 있어요.</p>
       </div>
@@ -235,10 +236,10 @@
 
   <!-- 프로필 -->
   <section class="screen hide-r" data-s="info">
-    <div class="head"><div class="nav"><button class="back" data-back="signup" aria-label="뒤로">${BACK}</button><span class="logo"><i>✦</i>USERVERSE</span></div><div class="gauge"></div></div>
+    <div class="head"><div class="nav"><button class="back" data-back="signup" aria-label="뒤로">${BACK}</button><span class="logo"><i>★</i>USERVERSE</span></div><div class="gauge"></div></div>
     <div class="content">
       <div class="hero">
-        <span class="eyebrow">✦ PROFILE SETUP</span>
+        <span class="eyebrow">★ PROFILE SETUP</span>
         <h2>플레이어 정보 입력</h2>
         <p>사용할 닉네임과 비밀번호를<br>정해 주세요.</p>
       </div>
@@ -258,10 +259,10 @@
 
   <!-- 완료 -->
   <section class="screen hide-r" data-s="done">
-    <div class="head"><div class="nav"><span></span><span class="logo"><i>✦</i>USERVERSE</span></div><div class="gauge"></div></div>
+    <div class="head"><div class="nav"><span></span><span class="logo"><i>★</i>USERVERSE</span></div><div class="gauge"></div></div>
     <div class="done" id="doneBox">
       <div class="mark">${BIGSTAR}</div>
-      <span class="eyebrow" id="doneEyebrow">✦ STAGE CLEAR</span>
+      <span class="eyebrow" id="doneEyebrow">★ STAGE CLEAR</span>
       <h2 id="doneTitle">가입이 완료됐어요</h2>
       <p id="doneDesc"></p>
     </div>
@@ -352,7 +353,7 @@ const email=$('#email'),emailBox=$('#emailBox'),emailBubble=$('#emailBubble'),no
 const capCb=$('#captcha .cb'),agCb=$('#agree .cb'),emailField=email.closest('.field');
 function syncStep2(){toInfo.disabled=!((emailState==='ok'||emailState==='rejoin')&&capCb.classList.contains('on')&&agCb.classList.contains('on'));paintGauge()}
 function setRejoin(v){rejoin=v;$('[data-s=signup]').classList.toggle('rejoin',v);
-  $('#suEyebrow').textContent=v?'✦ WELCOME BACK':'✦ NEW PLAYER';$('#suTitle').textContent=v?'다시 오셨군요!':'계정 만들기';
+  $('#suEyebrow').textContent=v?'★ WELCOME BACK':'★ NEW PLAYER';$('#suTitle').textContent=v?'다시 오셨군요!':'계정 만들기';
   $('#suDesc').innerHTML=v?'다시 만나서 정말 반가워요.<br>예전처럼 몇 가지만 확인할게요.':'몇 가지만 입력하면<br>바로 시작할 수 있어요.';toInfo.textContent=v?'다시 시작하기':'계속하기'}
 function checkEmail(fromBlur){
   const v=email.value.trim().toLowerCase(),prev=emailState;
@@ -383,14 +384,14 @@ email.addEventListener('keydown',e=>{if(e.key==='Enter'){email.blur()}});
 function flip(cb,tog){const v=cb.classList.toggle('on');tog.classList.toggle('on',v);cb.classList.remove('pop');void cb.offsetWidth;cb.classList.add('pop');SFX.check(v);if(v)xp(tog);syncStep2()}
 $('#captcha').onclick=()=>flip(capCb,$('#captcha'));
 $('#agree').onclick=e=>{if(e.target.tagName==='A'){SFX.tick();toast('약관 화면은 이 데모에 없어요');return}flip(agCb,$('#agree'))};
-toInfo.onclick=()=>{if(rejoin&&!name.value){name.value=REJOIN.nick}$('#dice').style.display=rejoin?'none':'';go('info');silent=true;validate();silent=false};
+toInfo.onclick=()=>{if(rejoin&&!name.value){name.value=REJOIN.nick}go('info');silent=true;validate();silent=false};
 
 // ---------- Step 3: nickname / password ----------
 const TAKEN=['gamer123','userverse','admin','운영자'];
 const ADJ=['반짝이는','용감한','졸린','네온','픽셀','우주','말랑한','전설의','수줍은','번개','핑크','배고픈'];
 const NOUN=['고양이','토끼','여우','유니콘','펭귄','용사','마법사','별똥별','젤리','로봇','곰돌이','슬라임'];
 const name=$('#name'),nameBox=$('#nameBox'),nameHelp=$('#nameHelp'),pw=$('#pw'),pwBox=$('#pwBox'),pw2=$('#pw2'),pw2Box=$('#pw2Box'),pw2Bubble=$('#pw2Bubble'),finish=$('#finish');
-let nameOk=false,pwOk=false,matchOk=false,pwTouched=false,pw2Done=false,silent=false;
+let lastRolled='',nameOk=false,pwOk=false,matchOk=false,pwTouched=false,pw2Done=false,silent=false;
 function q(id,key,state){const s=$(`#${id} [data-q=${key}]`);s.classList.toggle('ok',state==='ok');s.classList.toggle('bad',state==='bad')}
 function validate(){
   const before={nameOk,pwOk,matchOk,nErr:nameBox.classList.contains('err'),pErr:pwBox.classList.contains('err'),mErr:!pw2Bubble.hidden};
@@ -414,6 +415,7 @@ function validate(){
   matchOk=!!pw2.value&&pw2.value===p;const mErr=!!pw2.value&&!matchOk&&(pw2Done||pw2.value.length>=p.length);
   pw2Bubble.hidden=!mErr;pw2Box.classList.toggle('err',mErr);pw2Box.classList.toggle('ok',matchOk);badge($('#pw2Badge'),matchOk?'ok':mErr?'err':'');
   finish.disabled=!(nameOk&&pwOk&&matchOk);paintGauge();
+  $('#dice').hidden=!(!name.value||(lastRolled&&name.value===lastRolled)||$('#dice').classList.contains('roll'));
   if(silent)return;
   const errs=[[!before.nErr&&nameErr,nameBox],[!before.pErr&&pwErr,pwBox],[!before.mErr&&mErr,pw2Box]].filter(x=>x[0]);
   if(errs.length){SFX.error();errs.forEach(x=>shake(x[1]))}
@@ -426,14 +428,14 @@ pw2.addEventListener('focus',()=>{if(!pw2.value)pw2Done=false});
 // 닉네임 추천: 슬롯머신처럼 굴린 뒤 멈춤
 function randomNick(){let n;do{n=ADJ[Math.random()*ADJ.length|0]+NOUN[Math.random()*NOUN.length|0];if([...n].length>10)continue;if(Math.random()<.5)n+=(Math.random()*99|0)+1}while([...n].length>12||TAKEN.includes(n));return n}
 $('#dice').onclick=()=>{const d=$('#dice');if(d.disabled)return;d.disabled=true;d.classList.add('roll');nameBox.classList.add('rolling');let k=0;
-  const t=setInterval(()=>{name.value=randomNick();SFX.tick();silent=true;validate();silent=false;if(++k>=9){clearInterval(t);d.disabled=false;d.classList.remove('roll');nameBox.classList.remove('rolling');validate()}},70)};
+  const t=setInterval(()=>{name.value=randomNick();SFX.tick();silent=true;validate();silent=false;if(++k>=9){clearInterval(t);lastRolled=name.value;d.disabled=false;d.classList.remove('roll');nameBox.classList.remove('rolling');validate()}},70)};
 finish.onclick=()=>{
-  $('#doneEyebrow').textContent=rejoin?'✦ WELCOME BACK':'✦ STAGE CLEAR';
+  $('#doneEyebrow').textContent=rejoin?'★ WELCOME BACK':'★ STAGE CLEAR';
   $('#doneTitle').innerHTML=rejoin?'다시 함께하게 돼서<br>기뻐요':'가입이 완료됐어요';
   $('#doneDesc').innerHTML=rejoin?'그동안 잘 지내셨나요?<br>'+name.value+'님, 다시 환영해요!':name.value+'님,<br>유저버스에 오신 걸 환영해요!';go('done')};
 function burst(){const box=$('#doneBox');for(let i=0;i<18;i++){const c=document.createElement('i');c.className='confetti';const a=Math.random()*Math.PI*2,r=80+Math.random()*90;
   c.style.cssText=`left:50%;top:38%;background:${i%3?'#FF2D95':'#FF7AB8'};--dx:${Math.cos(a)*r}px;--dy:${Math.sin(a)*r}px`;box.appendChild(c);setTimeout(()=>c.remove(),1200)}}
-$$('[data-reset]').forEach(b=>b.onclick=()=>{[name,pw,pw2,email].forEach(i=>i.value='');emailTouched=false;pwTouched=false;pw2Done=false;
+$$('[data-reset]').forEach(b=>b.onclick=()=>{lastRolled='';[name,pw,pw2,email].forEach(i=>i.value='');emailTouched=false;pwTouched=false;pw2Done=false;
   capCb.classList.remove('on');agCb.classList.remove('on');$$('.tog').forEach(t=>t.classList.remove('on'));silent=true;checkEmail(false);validate();silent=false;go('login')});
 
 // ---------- hover / press / sound toggle ----------
