@@ -168,6 +168,26 @@
   .confetti{position:absolute;width:6px;height:6px;pointer-events:none;animation:fall 1100ms var(--ease) forwards}
   @keyframes fall{to{transform:translate(var(--dx),var(--dy));opacity:0}}
 
+  /* country select + bottom sheet */
+  .input.select{width:100%;font:inherit;color:var(--text-primary);text-align:left;cursor:pointer}
+  .input.select:hover{border-color:var(--pink)}
+  .input.select:focus-visible{outline:none;border-color:var(--pink);background:#170F13}
+  .flag{font-size:18px;line-height:1;width:22px;text-align:center;flex-shrink:0}
+  .sheet-back{position:absolute;inset:0;background:rgba(0,0,0,.6);z-index:20;display:flex;align-items:flex-end;animation:fade 160ms}
+  .sheet-back[hidden]{display:none}
+  .sheet{width:100%;height:72%;background:var(--bg-base);border-top:2px solid var(--pink);padding:var(--md) var(--lg) var(--lg);display:flex;flex-direction:column;gap:var(--md);animation:up 260ms var(--ease)}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between}
+  .sheet h3{font-family:var(--font-px-title);font-size:24px;font-weight:400}
+  .clist{flex:1;overflow:auto;display:flex;flex-direction:column;gap:2px;margin:0 calc(var(--sm) * -1);padding:0 var(--sm)}
+  .citem{flex-shrink:0;display:flex;align-items:center;gap:var(--md);height:48px;padding:0 var(--md);background:none;border:2px solid transparent;font:inherit;font-size:16px;color:var(--text-secondary);cursor:pointer;text-align:left;transition:background 80ms,border-color 80ms}
+  .citem .en{margin-left:auto;font-family:var(--font-px-en);font-size:11px;color:var(--text-tertiary)}
+  .citem:hover,.citem.kb{background:var(--pink-tint);border-color:rgba(255,45,149,.5);color:#fff}
+  .citem:hover .nm::before,.citem.kb .nm::before{content:"▶ ";font-family:var(--font-px-title);color:var(--pink)}
+  .citem.sel{color:var(--pink);border-color:var(--pink)}
+  .citem.sel .en{color:var(--pink-300)}
+  .cempty{color:var(--text-tertiary);font-size:14px;text-align:center;padding:var(--xl) 0}
+  @keyframes up{from{transform:translateY(100%)}}
+  @keyframes fade{from{opacity:0}}
   .toast{position:absolute;left:50%;bottom:120px;transform:translate(-50%,10px);background:var(--bg-elevated);color:var(--text-primary);font-size:12px;padding:10px 14px;border:2px solid var(--pink);opacity:0;transition:.2s;pointer-events:none;white-space:nowrap;z-index:9}
   .toast.show{opacity:1;transform:translate(-50%,0)}
   .tip{font-size:12px;color:var(--text-tertiary);text-align:center;line-height:1.8}
@@ -224,8 +244,8 @@
         <div class="input" id="emailBox"><input id="email" type="email" placeholder="player@email.com" autocomplete="off"></div>
         <div class="bubble" id="emailBubble" hidden>${ALERT}<div><b>이메일 형식을 확인해 주세요</b><small>예: player@userverse.gg</small></div></div>
         <div class="notice" id="notice" hidden></div></div>
-      <div class="field"><div class="lab"><span>거주 국가</span></div>
-        <div class="input"><span class="sel">대한민국</span>${CHEV}</div></div>
+      <div class="field" id="countryField"><div class="lab"><span>거주 국가</span></div>
+        <button class="input select" id="countryBtn" type="button" aria-haspopup="dialog"><span class="flag" id="countryFlag">🇰🇷</span><span class="sel" id="countryVal">대한민국</span>${CHEV}</button></div>
       <div class="stack" style="gap:var(--sm)">
         <div class="tog" id="captcha"><div class="cb">${CHECK}</div><span style="align-self:center">로봇이 아닙니다</span><div class="sec">${SHIELD}보안 확인</div></div>
         <div class="tog" id="agree"><div class="cb">${CHECK}</div><span>만 13세 이상이며,<br><a>유저버스 이용약관</a> 및<br><a>개인정보 처리방침</a>에 동의합니다.</span></div>
@@ -269,6 +289,14 @@
     <div class="cta"><button class="btn primary" data-reset>로그인하러 가기</button></div>
   </section>
 
+  <div class="sheet-back" id="sheetBack" hidden>
+    <div class="sheet" role="dialog" aria-label="거주 국가 선택">
+      <div class="sheet-head"><span class="eyebrow" style="margin:0">★ SELECT REGION</span><button class="icon-btn" id="sheetClose" aria-label="닫기">${CLOSE}</button></div>
+      <h3>거주 국가 선택</h3>
+      <div class="input" id="countrySearchBox"><span class="flag">⌕</span><input id="countrySearch" placeholder="나라 이름을 검색해 주세요" autocomplete="off"></div>
+      <div class="clist" id="clist"></div>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
 </div>
 
@@ -319,6 +347,7 @@ const ICON={
  ORBIT:'<svg class="orbit" width="150" height="150" viewBox="0 0 150 150" fill="none" stroke="#FF2D95" stroke-width="2"><circle cx="75" cy="75" r="40"/><ellipse cx="75" cy="78" rx="70" ry="17" transform="rotate(-12 75 78)"/></svg>',
  PSTAR:`<svg class="pstar" width="30" height="28" viewBox="0 0 13 12" shape-rendering="crispEdges" fill="#FF2D95"><path d="${STAR_PATH}"/></svg>`,
  BIGSTAR:`<svg width="84" height="78" viewBox="0 0 13 12" shape-rendering="crispEdges" fill="#FF2D95"><path d="${STAR_PATH}"/></svg>`,
+ CLOSE:'<svg width="18" height="18" viewBox="0 0 9 9" shape-rendering="crispEdges" fill="#D6D6D6"><path d="M1 1h2v1H1zM2 2h2v1H2zM3 3h3v3H3zM5 2h2v1H5zM6 1h2v1H6zM2 6h2v1H2zM1 7h2v1H1zM5 6h2v1H5zM6 7h2v1H6z"/></svg>',
  OKC:'<svg width="14" height="14" viewBox="0 0 8 8" shape-rendering="crispEdges" fill="#4DFFC3"><path d="M6 1h1v2H6zM5 3h1v1H5zM4 4h1v1H4zM3 5h1v1H3zM1 3h1v1H1zM2 4h1v1H2z"/></svg>'
 };
 const phone=document.querySelector('.phone');phone.innerHTML=phone.innerHTML.replace(/\$\{(\w+)\}/g,(_,k)=>ICON[k]||'');
@@ -435,11 +464,35 @@ finish.onclick=()=>{
   $('#doneDesc').innerHTML=rejoin?'그동안 잘 지내셨나요?<br>'+name.value+'님, 다시 환영해요!':name.value+'님,<br>유저버스에 오신 걸 환영해요!';go('done')};
 function burst(){const box=$('#doneBox');for(let i=0;i<18;i++){const c=document.createElement('i');c.className='confetti';const a=Math.random()*Math.PI*2,r=80+Math.random()*90;
   c.style.cssText=`left:50%;top:38%;background:${i%3?'#FF2D95':'#FF7AB8'};--dx:${Math.cos(a)*r}px;--dy:${Math.sin(a)*r}px`;box.appendChild(c);setTimeout(()=>c.remove(),1200)}}
-$$('[data-reset]').forEach(b=>b.onclick=()=>{lastRolled='';[name,pw,pw2,email].forEach(i=>i.value='');emailTouched=false;pwTouched=false;pw2Done=false;
+$$('[data-reset]').forEach(b=>b.onclick=()=>{lastRolled='';[name,pw,pw2,email].forEach(i=>i.value='');country='KR';$('#countryFlag').textContent='🇰🇷';$('#countryVal').textContent='대한민국';emailTouched=false;pwTouched=false;pw2Done=false;
   capCb.classList.remove('on');agCb.classList.remove('on');$$('.tog').forEach(t=>t.classList.remove('on'));silent=true;checkEmail(false);validate();silent=false;go('login')});
 
+
+// ---------- 거주 국가 선택 (게임 메뉴형 바텀시트) ----------
+const COUNTRIES=[['KR','🇰🇷','대한민국','Korea'],['US','🇺🇸','미국','United States'],['JP','🇯🇵','일본','Japan'],['CN','🇨🇳','중국','China'],['TW','🇹🇼','대만','Taiwan'],['HK','🇭🇰','홍콩','Hong Kong'],
+ ['SG','🇸🇬','싱가포르','Singapore'],['VN','🇻🇳','베트남','Vietnam'],['TH','🇹🇭','태국','Thailand'],['PH','🇵🇭','필리핀','Philippines'],['ID','🇮🇩','인도네시아','Indonesia'],['MY','🇲🇾','말레이시아','Malaysia'],
+ ['IN','🇮🇳','인도','India'],['AU','🇦🇺','호주','Australia'],['NZ','🇳🇿','뉴질랜드','New Zealand'],['CA','🇨🇦','캐나다','Canada'],['MX','🇲🇽','멕시코','Mexico'],['BR','🇧🇷','브라질','Brazil'],
+ ['GB','🇬🇧','영국','United Kingdom'],['DE','🇩🇪','독일','Germany'],['FR','🇫🇷','프랑스','France'],['ES','🇪🇸','스페인','Spain'],['IT','🇮🇹','이탈리아','Italy'],['NL','🇳🇱','네덜란드','Netherlands'],
+ ['SE','🇸🇪','스웨덴','Sweden'],['PL','🇵🇱','폴란드','Poland'],['TR','🇹🇷','튀르키예','Türkiye'],['AE','🇦🇪','아랍에미리트','UAE'],['MN','🇲🇳','몽골','Mongolia'],['KZ','🇰🇿','카자흐스탄','Kazakhstan']];
+let country='KR',kbIndex=-1;
+const sheetBack=$('#sheetBack'),clist=$('#clist'),csearch=$('#countrySearch');
+function renderCountries(){const q=csearch.value.trim().toLowerCase();const items=COUNTRIES.filter(c=>!q||c[2].includes(q)||c[3].toLowerCase().includes(q));
+  clist.innerHTML=items.length?items.map(c=>`<button class="citem${c[0]===country?' sel':''}" data-c="${c[0]}" type="button"><span class="flag">${c[1]}</span><span class="nm">${c[2]}</span><span class="en">${c[0]===country?'★ ':''}${c[3].toUpperCase()}</span></button>`).join(''):'<div class="cempty">찾는 나라가 없어요</div>';
+  kbIndex=-1;$$('.citem').forEach(b=>b.onclick=()=>pickCountry(b.dataset.c))}
+function openSheet(){csearch.value='';renderCountries();sheetBack.hidden=false;SFX.page(false);setTimeout(()=>{const s=clist.querySelector('.sel');if(s)s.scrollIntoView({block:'center'});csearch.focus()},60)}
+function closeSheet(){sheetBack.hidden=true;$('#countryBtn').focus({preventScroll:true})}
+function pickCountry(code){const c=COUNTRIES.find(x=>x[0]===code);const changed=code!==country;country=code;$('#countryFlag').textContent=c[1];$('#countryVal').textContent=c[2];
+  SFX.check(true);closeSheet();if(changed)xp($('#countryField'),'+5 XP')}
+$('#countryBtn').onclick=openSheet;$('#sheetClose').onclick=()=>{SFX.tick();closeSheet()};
+sheetBack.addEventListener('click',e=>{if(e.target===sheetBack){SFX.tick();closeSheet()}});
+csearch.addEventListener('input',renderCountries);
+document.addEventListener('keydown',e=>{if(sheetBack.hidden)return;const items=$$('.citem');
+  if(e.key==='Escape'){closeSheet()}
+  else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!items.length)return;kbIndex=(kbIndex+(e.key==='ArrowDown'?1:-1)+items.length)%items.length;items.forEach((b,i)=>b.classList.toggle('kb',i===kbIndex));items[kbIndex].scrollIntoView({block:'nearest'});SFX.hover()}
+  else if(e.key==='Enter'&&kbIndex>=0&&items[kbIndex]){e.preventDefault();pickCountry(items[kbIndex].dataset.c)}});
+
 // ---------- hover / press / sound toggle ----------
-const HOV='.btn:not(:disabled),.back,.icon-btn,.link,.tog,.input,.dice,.mini,.lnk,.sound';let lastHov=null,lastT=0;
+const HOV='.citem,.btn:not(:disabled),.back,.icon-btn,.link,.tog,.input,.dice,.mini,.lnk,.sound';let lastHov=null,lastT=0;
 document.addEventListener('pointerover',e=>{const el=e.target.closest(HOV);if(el&&el!==lastHov){const now=performance.now();if(now-lastT>45){SFX.hover();lastT=now}}lastHov=el});
 document.addEventListener('pointerdown',e=>{SFX.init();const b=e.target.closest('.btn,.back,.link,.mini');if(b&&!b.disabled)SFX.press()},true);
 const sb=$('#soundBtn');sb.onclick=()=>{SFX.init();const v=SFX.toggle();sb.classList.toggle('off',!v);sb.querySelector('span').textContent=v?'사운드 켜짐':'사운드 꺼짐';if(v)SFX.coin()};

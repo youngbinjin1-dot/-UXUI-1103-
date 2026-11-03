@@ -214,6 +214,19 @@ sources:
 .btn:disabled{background:#2A2A2A;color:#4D4D4D;box-shadow:none}
 ```
 
+**Country Select (거주 국가)** — 게임 메뉴 같은 바텀시트
+- 칸을 누르면 아래에서 시트가 올라옴(260ms) + swoosh, 배경 60% 어둡게
+- 상단 `★ SELECT REGION` + "거주 국가 선택", 검색칸(한글·영문 이름 검색), 결과 없으면 "찾는 나라가 없어요"
+- 목록 행 48px: 국기 · 한글 이름 · 영문 대문자(DOSIyagi 11px)
+- hover/방향키: 핑크 틴트 + `▶` 커서 + 블립음, 선택된 나라는 핑크 테두리와 `★`
+- 선택 시 체크음 + 시트 닫힘 + 다른 나라로 바꿨으면 `+5 XP`, Esc·배경 클릭·✕로 닫기
+```css
+.sheet{height:72%;background:#1C1C1C;border-top:2px solid #FF2D95;animation:up 260ms var(--ease)}
+.citem{height:48px;border:2px solid transparent;font:16px 'DOSGothic'}
+.citem:hover{background:rgba(255,45,149,.14);border-color:rgba(255,45,149,.5)}
+.citem.sel{color:#FF2D95;border-color:#FF2D95}
+```
+
 **Toggle (캡차·약관)** — 픽셀 사각 체크박스, 체크 시 팝 애니메이션 + 두 음 + `+10 XP`
 
 **XP Gauge (진행도)** — 숫자 없이 24칸 블록, 단계 + 현재 단계에서 완료한 항목 수만큼 실시간으로 채워짐, 마지막 블록은 #FF7AB8
