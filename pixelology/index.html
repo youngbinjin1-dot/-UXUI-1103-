@@ -6,6 +6,7 @@
 <title>픽셀올로지</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/galmuri.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
 <style>
   :root{
     --sky-top:#34203F; --sky-mid:#44264E; --sky-low:#5E3460;
@@ -74,8 +75,6 @@
   .check{display:flex;align-items:center;gap:10px;min-height:32px;font:400 12px/1.5 Galmuri11,sans-serif;color:var(--text);cursor:pointer}
   .check input{width:22px;height:22px;margin:0;flex:none;accent-color:var(--yellow)}
   .checks{display:flex;flex-direction:column;gap:4px;margin:0;padding:0;border:0}
-  details summary{min-height:32px;display:flex;align-items:center;font:400 12px Galmuri11,sans-serif;color:var(--yellow);cursor:pointer}
-  details .field{margin-top:6px}
   dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:10px 16px;padding:14px 0;border-block:2px dashed var(--edge);font:400 12px/1.5 Galmuri11,sans-serif}
   dt{color:var(--muted)}
   dd{margin:0;text-align:right;color:var(--text)}
@@ -83,6 +82,23 @@
   .hero{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
   .big{margin:0;font:700 30px/1.3 Galmuri14,Galmuri11,sans-serif;color:var(--line);text-shadow:3px 3px 0 #C2379F}
   .tag{margin:0;font:700 15px 'Pixelify Sans',Galmuri11,sans-serif;letter-spacing:.14em;color:var(--yellow)}
+  .burst{justify-content:center;gap:14px}
+  .wallet{margin:0;font:400 12px Galmuri11,sans-serif;color:var(--muted)}
+  .wallet b{font-weight:400;color:var(--yellow)}
+  .shop{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  .shop li{display:grid;grid-template-columns:60px minmax(0,1fr) auto;align-items:center;gap:4px 12px;padding:8px;border:2px solid var(--edge);border-radius:14px;background:var(--field)}
+  .cover{width:60px;height:60px;display:grid;place-items:center;border-radius:10px;background:#3E2A5C}
+  .info{min-width:0}
+  .name{margin:0 0 2px;font:400 15px/1.3 Galmuri14,Galmuri11,sans-serif}
+  .buy{min-width:76px;height:44px;padding:0 10px;border:0;border-radius:999px;cursor:pointer;font:700 12px Galmuri11,sans-serif;color:var(--ink);background:var(--yellow);box-shadow:inset 0 -4px 0 var(--yellow-deep)}
+  .buy:active{transform:translateY(2px)}
+  .buy:focus-visible{outline:3px solid var(--line);outline-offset:2px}
+  .buy:disabled{background:#5A4A6E;color:var(--text);box-shadow:none;cursor:default}
+  .lack{grid-column:3;min-height:0;text-align:right;color:var(--err)}
+  .sound{position:absolute;z-index:3;right:6px;bottom:0;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--ink);cursor:pointer}
+  .sound[aria-pressed=false] canvas{opacity:.35}
+  .sound:focus-visible{outline:3px solid var(--line);outline-offset:2px}
+  .btn:disabled,.link:disabled{opacity:.55;cursor:default}
   @media (prefers-reduced-motion:reduce){.twinkle,.drift,.flame{animation:none}}
 </style>
 </head>
@@ -90,7 +106,33 @@
 <main class="stage" id="stage">
   <div class="floor" aria-hidden="true"><i></i></div>
   <section class="frame" id="frame" aria-live="polite"></section>
+  <button class="sound" id="sound" type="button" aria-label="소리" aria-pressed="true"></button>
 </main>
+<script>
+// 8비트 UI 사운드: Web Audio로 합성해서 작고 짧게 낸다. 첫 입력 전에는 브라우저가 소리를 막는다.
+const SFX=(()=>{let ctx,master,on=true;
+ function init(){if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;ctx=new AC();master=ctx.createGain();master.gain.value=.7;
+   const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=4200;master.connect(lp);lp.connect(ctx.destination)}
+  if(ctx.state==='suspended')ctx.resume()}
+ function tone(f,{t=0,dur=.08,type='sine',gain=.06,to=null,attack=.004}={}){if(!ctx||!on)return;const n=ctx.currentTime+t,o=ctx.createOscillator(),g=ctx.createGain();
+  o.type=type;o.frequency.setValueAtTime(f,n);if(to)o.frequency.exponentialRampToValueAtTime(to,n+dur);
+  g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(gain,n+attack);g.gain.exponentialRampToValueAtTime(.0001,n+dur);o.connect(g);g.connect(master);o.start(n);o.stop(n+dur+.03)}
+ function swoosh(from,to,{dur=.24,gain=.035}={}){if(!ctx||!on)return;const n=ctx.currentTime,len=Math.floor(ctx.sampleRate*dur),buf=ctx.createBuffer(1,len,ctx.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=Math.random()*2-1;const src=ctx.createBufferSource();src.buffer=buf;const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.Q.value=1.4;
+  bp.frequency.setValueAtTime(from,n);bp.frequency.exponentialRampToValueAtTime(to,n+dur);const g=ctx.createGain();g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(gain,n+dur*.35);g.gain.exponentialRampToValueAtTime(.0001,n+dur);
+  src.connect(bp);bp.connect(g);g.connect(master);src.start(n);src.stop(n+dur)}
+ return{init,toggle(){on=!on;return on},
+  press(){tone(220,{dur:.08,to:150,gain:.1});tone(1760,{dur:.016,type:'square',gain:.008})},
+  type(){tone(900+Math.random()*200,{dur:.018,type:'square',gain:.004})},
+  focus(){tone(988,{dur:.03,type:'square',gain:.008})},
+  tick(){tone(1175,{dur:.03,type:'square',gain:.011})},
+  check(v){v?(tone(784,{dur:.06,type:'square',gain:.016}),tone(1175,{t:.05,dur:.11,type:'square',gain:.014})):(tone(784,{dur:.05,type:'square',gain:.013}),tone(523,{t:.045,dur:.09,type:'square',gain:.012}))},
+  coin(){tone(988,{dur:.06,type:'square',gain:.016});tone(1319,{t:.06,dur:.22,type:'square',gain:.016})},
+  page(){swoosh(420,1500);tone(523.25,{t:.05,dur:.18,type:'triangle',gain:.03})},
+  error(){tone(311,{dur:.1,type:'square',gain:.02});tone(233,{t:.09,dur:.18,type:'square',gain:.02})},
+  welcome(){[392,523.25,659.25].forEach((f,i)=>tone(f,{t:i*.09,dur:.6,type:'triangle',gain:.04,attack:.012}))},
+  success(){[523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,{t:i*.08,dur:.5,type:'square',gain:.016,attack:.008}));tone(1046.5,{t:.34,dur:1,type:'triangle',gain:.04})}}})();
+</script>
 <script>
 // 픽셀 그림은 전부 코드로 그린다. 글자 한 칸이 픽셀 한 칸이다.
 function sprite(rows,pal,s=3){
@@ -195,21 +237,43 @@ const DAY=864e5,TEST_CODE='123456',ago=d=>Date.now()-d*DAY;
 const PERKS=[{name:'시즌 패스',live:true},{name:'황금 테두리',live:false}];
 const accounts=new Map([
   ['active@pixelology.test',{nick:'네온펭귄',pw:'pixel1234',level:4,xp:420,points:800,perks:PERKS,seen:ago(1),code:'PX-NEON'}],
-  ['dormant@pixelology.test',{nick:'졸린용사',pw:'pixel1234',level:9,xp:2010,points:1500,perks:PERKS,seen:ago(214),code:'PX-NAPS'}]]);
+  ['dormant@pixelology.test',{nick:'졸린용사',pw:'pixel1234',level:9,xp:2010,points:1500,perks:PERKS,seen:ago(214),code:'PX-NAPS'}],
+  ['qwer@gmail.com',{nick:'이미있던용사',pw:'pixel1234',level:6,xp:880,points:1200,perks:PERKS,seen:ago(2),code:'PX-QWER'}]]);
 const saves=new Map([
   ['back20@pixelology.test',{nick:'혜성라이더',level:7,xp:1240,points:1000,perks:PERKS,left:ago(20),restores:0}],
   ['back60@pixelology.test',{nick:'말랑한여우',level:5,xp:760,points:1000,perks:PERKS,left:ago(60),restores:0}],
   ['back120@pixelology.test',{nick:'번개토끼',level:3,xp:300,points:400,perks:PERKS,left:ago(120),restores:0}],
+  ['1234@gmail.com',{nick:'돌아온탕아',level:8,xp:1650,points:2000,perks:PERKS,left:ago(40),restores:0}],
   ['again@pixelology.test',{nick:'돌아온고양이',level:6,xp:900,points:1000,perks:PERKS,left:ago(10),restores:1}]]);
 const TAKEN=['gamer123','admin','운영자','pixelology'];
+// 상점 게임은 가상의 시연용이다. 구매는 앱 포인트로만 하고 실제 결제는 없다.
+const GAMES=[
+  {id:'slime',name:'슬라임 탐험대',genre:'어드벤처',price:0,art:'slime:3'},
+  {id:'farm',name:'꽃밭 농장',genre:'시뮬레이션',price:100,art:'flower:4'},
+  {id:'dungeon',name:'보물 던전',genre:'로그라이크',price:500,art:'box:3'},
+  {id:'racer',name:'별빛 레이서',genre:'레이싱',price:1200,art:'star:4'}];
 
 // 복귀 보상표: 30일 이내 전부, 31~90일 포인트 50%와 진행 중인 혜택, 90일 초과는 파기. 포인트·혜택 복원은 이메일당 1회.
 function rewardFor(save){const days=Math.floor((Date.now()-save.left)/DAY);
   if(days>90)return null;
   if(save.restores>0)return{days,rate:0,perks:[],tier:'again'};
   return days<=30?{days,rate:1,perks:save.perks,tier:'near'}:{days,rate:.5,perks:save.perks.filter(p=>p.live),tier:'far'}}
+// 메일 발송: 아래 두 값을 채우면 실제 메일이 나간다. 비워 두면 코드 123456으로 시험한다. 공개 키만 넣는다.
+const SUPABASE={url:'https://lurooozjznncrgdmhwqb.supabase.co',publicKey:'sb_publishable_anNfObMOMVLUJfat_0ScUA_9l9qXzAX'};
+const live=SUPABASE.url?window.supabase.createClient(SUPABASE.url,SUPABASE.publicKey,{auth:{persistSession:false}}):null;
+// 시험 계정은 메일을 보내지 않고 코드 123456으로 확인한다. 주인이 따로 있는 주소로 메일이 나가면 안 되기 때문이다.
+const SEEDED=new Set([...accounts.keys(),...saves.keys()]);
+const RESEND_SECONDS=60,sentAt=new Map();
+const resendWait=email=>Math.max(0,Math.ceil(RESEND_SECONDS-(Date.now()-(sentAt.get(email)??-Infinity))/1000));
 const auth={
-  verify(email,code){if(code!==TEST_CODE)return{kind:'wrong'};
+  // 실패하면 안내 문장을, 성공하면 빈 문자열을 돌려준다. 대기 중인 같은 이메일은 이미 보낸 메일을 쓴다.
+  async send(email){if(resendWait(email)>0)return'';
+    if(live&&!SEEDED.has(email)){const{error}=await live.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+      if(error){console.error('메일 발송 실패',error);return error.status===429?'발송 한도 초과 · 잠시 뒤 다시 시도':'메일 발송 실패 · 잠시 뒤 다시 시도'}}
+    sentAt.set(email,Date.now());return''},
+  async verify(email,code){
+    if(live&&!SEEDED.has(email)){const{error}=await live.auth.verifyOtp({email,token:code,type:'email'});if(error)return{kind:error.status===429?'limit':'wrong'}}
+    else if(code!==TEST_CODE)return{kind:'wrong'};
     const a=accounts.get(email);if(a)return{kind:'account',user:a};
     const s=saves.get(email),r=s&&rewardFor(s);if(r)return{kind:'save',save:s,reward:r};
     if(s)saves.delete(email);return{kind:'new'}},
@@ -235,17 +299,18 @@ function randomNick(){let n;do{n=ADJ[Math.random()*ADJ.length|0]+NOUN[Math.rando
 
 function mount(html,after){frame.innerHTML=html;
   frame.querySelectorAll('[data-sprite]').forEach(el=>{const[k,s]=el.dataset.sprite.split(':');
-    const art={npc:[NPC,P],coin:[COIN,P],back:[BACK,P],heart:[HEART,P],gem:[GEM,P],chest:[CHEST_OPEN,CHEST_PAL],star:[STAR,P]}[k];el.appendChild(sprite(art[0],art[1],+s||3))});
+    const art={npc:[NPC,P],coin:[COIN,P],back:[BACK,P],heart:[HEART,P],gem:[GEM,P],chest:[CHEST_OPEN,CHEST_PAL],star:[STAR,P],box:[CHEST,CHEST_PAL],slime:[SLIME,{g:'#5B7FE0',G:'#8FA8F0',k:'#1E1329'}],flower:[FLOWER,{...P,g:'#3FB27F',o:'#7A4A1E'}]}[k];el.appendChild(sprite(art[0],art[1],+s||3))});
   frame.querySelectorAll('[data-eye]').forEach(b=>b.onclick=()=>{const i=b.parentElement.querySelector('input'),show=i.type==='password';i.type=show?'text':'password';b.textContent=show?'가리기':'보기';b.setAttribute('aria-pressed',show)});
   frame.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
   after&&after();
   const first=$('input:not([type=checkbox])');if(first)first.focus()}
-function go(name,...a){document.body.classList.toggle('form',name!=='title');screens[name](...a);scrollTo(0,0)}
+const ENTRY_SOUND={done:'success',dormant:'welcome',restore:'welcome'};
+function go(name,...a){document.body.classList.toggle('form',name!=='title');screens[name](...a);scrollTo(0,0);SFX[ENTRY_SOUND[name]||'page']()}
 const top_=(back,gems=0)=>`<div class="top"><button class="back" type="button" aria-label="뒤로" data-go="${back}"><span data-sprite="back:3"></span></button>
   ${gems?`<div class="row" aria-label="가입 진행 ${gems}/5" role="img">${[1,2,3,4,5].map(i=>`<span id="g${i}" class="${i>gems?'dim':''}" data-sprite="gem:3"></span>`).join('')}</div>`:''}</div>`;
 const talk=(line)=>`<div class="talk"><span data-sprite="npc:4" aria-hidden="true"></span><p class="say"><span class="who">문지기</span>${line}</p></div>`;
 const pwField=(id,label)=>`<div class="field"><label for="${id}">${label}</label><div class="box"><input class="pad" id="${id}" type="password" autocomplete="new-password"><button class="mini" type="button" data-eye aria-pressed="false">보기</button></div><p class="note" id="${id}N">영문·숫자 포함 8자 이상</p></div>`;
-function mark(input,note,msg,base=''){input.classList.toggle('bad',!!msg);input.setAttribute('aria-invalid',!!msg);note.textContent=msg||base;note.classList.toggle('bad',!!msg)}
+function mark(input,note,msg,base=''){if(msg&&note.textContent!==msg)SFX.error();input.classList.toggle('bad',!!msg);input.setAttribute('aria-invalid',!!msg);note.textContent=msg||base;note.classList.toggle('bad',!!msg)}
 function enter(user){user.seen=Date.now();S.user=user;go('lobby')}
 
 const screens={
@@ -258,20 +323,27 @@ const screens={
     <form novalidate><div class="field"><label for="em">이메일</label><input id="em" type="email" autocomplete="email" inputmode="email" placeholder="player@email.com" value="${esc(S.email)}"><p class="note" id="emN"></p></div>
     <button class="btn go">코드 받기</button></form>`,()=>{const i=$('#em'),n=$('#emN');
       i.onblur=()=>{if(i.value.trim())mark(i,n,okEmail(i.value.trim())?'':'이메일 형식 확인 · 예: player@email.com')};
-      $('form').onsubmit=e=>{e.preventDefault();const v=i.value.trim().toLowerCase();if(!okEmail(v)){mark(i,n,'이메일 형식 확인 · 예: player@email.com');i.focus();return}S.email=v;S.tries=3;go('code')}})},
+      $('form').onsubmit=async e=>{e.preventDefault();const v=i.value.trim().toLowerCase(),b=$('form .btn');if(!okEmail(v)){mark(i,n,'이메일 형식 확인 · 예: player@email.com');i.focus();return}
+        b.disabled=true;b.textContent='보내는 중';const err=await auth.send(v);
+        if(err){b.disabled=false;b.textContent='코드 받기';mark(i,n,err);return}
+        S.email=v;S.tries=3;go('code')}})},
 
   code(){const hearts=()=>[1,2,3].map(i=>`<span class="${i>S.tries?'dim':''}" data-sprite="heart:3"></span>`).join('');
     mount(`${top_('email',S.mode==='reset'?0:2)}${talk('자네 앞으로 패를 보냈네.<br>숫자를 불러 보게.')}
-    <form novalidate><div class="field"><label for="cd">${esc(S.email)}로 보낸 6자리 코드</label><input class="code" id="cd" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6"><p class="note" id="cdN" role="alert"></p></div>
+    <form novalidate><div class="field"><label for="cd">${esc(S.email)}로 보낸 코드</label><input class="code" id="cd" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8"><p class="note" id="cdN" role="alert"></p></div>
     <div class="row" id="hearts" role="img" aria-label="남은 시도 ${S.tries}회">${hearts()}</div>
     <button class="btn go">확인</button></form><button class="link" type="button" id="again">코드 다시 받기</button>`,()=>{const i=$('#cd'),n=$('#cdN');
-      $('#again').onclick=()=>{S.tries=3;go('code')};
-      $('form').onsubmit=e=>{e.preventDefault();const r=auth.verify(S.email,i.value.trim());
+      const again=$('#again'),paint=()=>{const w=resendWait(S.email);again.disabled=w>0;again.textContent=w>0?`코드 다시 받기 · ${w}초`:'코드 다시 받기'};
+      paint();const timer=setInterval(()=>again.isConnected?paint():clearInterval(timer),1000);
+      again.onclick=async()=>{again.disabled=true;const err=await auth.send(S.email);if(err){mark(i,n,err);paint();return}
+        S.tries=3;go('code');$('#cdN').textContent='새 코드 발송 · 이전 코드는 무효'};
+      $('form').onsubmit=async e=>{e.preventDefault();const b=$('form .btn');b.disabled=true;const r=await auth.verify(S.email,i.value.trim());b.disabled=false;
+        if(r.kind==='limit'){mark(i,n,'시도 한도 초과 · 잠시 뒤 다시 시도');return}
         if(r.kind==='wrong'){S.tries--;if(S.tries<=0){go('email');mark($('#em'),$('#emN'),'시도 횟수 초과 · 코드를 다시 받아야 함');return}
           $('#hearts').innerHTML='';[1,2,3].forEach(k=>{const h=document.createElement('span');if(k>S.tries)h.className='dim';h.appendChild(sprite(HEART,P,3));$('#hearts').appendChild(h)});
           mark(i,n,`코드 불일치 · 남은 시도 ${S.tries}회`);i.value='';i.focus();return}
         if(S.mode==='reset'&&r.kind==='account'){S.user=r.user;go('newpw');return}
-        if(r.kind==='account'){S.user=r.user;Date.now()-r.user.seen>30*DAY?go('dormant'):enter(r.user);return}
+        if(r.kind==='account'){S.user=r.user;go(Date.now()-r.user.seen>30*DAY?'dormant':'known');return}
         if(r.kind==='save'){S.save=r.save;S.reward=r.reward;go('restore');return}
         go('profile')}})},
 
@@ -279,7 +351,7 @@ const screens={
     <form novalidate>
       <div class="field"><label for="nk">닉네임</label><div class="box"><input class="pad" id="nk" type="text" autocomplete="nickname" maxlength="20"><button class="mini" type="button" id="dice">추천</button></div><p class="note" id="nkN">2~12자 · 한글·영문·숫자</p></div>
       ${pwField('pw','비밀번호')}
-      <details><summary>추천인 코드가 있다면</summary><div class="field"><label for="rf">추천인 코드 (선택)</label><input id="rf" type="text" autocomplete="off" placeholder="PX-0000"><p class="note" id="rfN">입력하면 양쪽 모두 100P</p></div></details>
+      <div class="field"><label for="rf">추천해 준 사람의 코드 (선택)</label><input id="rf" type="text" autocomplete="off" placeholder="PX-0000"><p class="note" id="rfN">입력하면 양쪽 모두 100P</p></div>
       <fieldset class="checks"><legend class="lab">필수 동의</legend>
         <label class="check"><input type="checkbox" id="c1">만 14세 이상이다</label>
         <label class="check"><input type="checkbox" id="c2">이용약관에 동의한다</label>
@@ -290,16 +362,28 @@ const screens={
       $('form').oninput=gems;
       nk.onblur=()=>{if(nk.value.trim())mark(nk,nkN,nickProblem(nk.value.trim()),'2~12자 · 한글·영문·숫자')};
       pw.onblur=()=>{if(pw.value)mark(pw,pwN,okPw(pw.value)?'':'영문·숫자 포함 8자 이상 필요','영문·숫자 포함 8자 이상')};
-      $('#dice').onclick=()=>{let k=0;const t=setInterval(()=>{nk.value=randomNick();if(++k>=8){clearInterval(t);mark(nk,nkN,'','2~12자 · 한글·영문·숫자');gems()}},70)};
+      $('#dice').onclick=()=>{let k=0;const t=setInterval(()=>{nk.value=randomNick();SFX.tick();if(++k>=8){clearInterval(t);mark(nk,nkN,'','2~12자 · 한글·영문·숫자');SFX.coin();gems()}},70)};
       $('form').onsubmit=e=>{e.preventDefault();const name=nk.value.trim(),code=rf.value.trim().toUpperCase(),p1=nickProblem(name),p2=okPw(pw.value)?'':'영문·숫자 포함 8자 이상 필요',owner=code&&auth.codeOwner(code),p3=code&&!owner?'없는 코드 · 비워 두어도 가입 가능':'',p4=cs.every(c=>c.checked)?'':'필수 항목 3개 동의 필요';
         mark(nk,nkN,p1,'2~12자 · 한글·영문·숫자');mark(pw,pwN,p2,'영문·숫자 포함 8자 이상');mark(rf,rfN,p3,'입력하면 양쪽 모두 100P');$('#cN').textContent=p4;$('#cN').classList.toggle('bad',!!p4);
-        if(p3)$('details').open=true;
         if(p1)return nk.focus();if(p2)return pw.focus();if(p3)return rf.focus();if(p4)return cs.find(c=>!c.checked).focus();
         if(owner)owner.points+=100;S.bonus=!!owner;S.user=auth.create(S.email,{nick:name,pw:pw.value,bonus:S.bonus});go('done')}})},
 
-  done(){mount(`<div class="hero"><span data-sprite="star:6" aria-hidden="true"></span><p class="tag">STAGE CLEAR</p><p class="big">${esc(S.user.nick)}</p></div>
-    ${talk('들어가게.<br>오늘부터 자네도 여기 사람일세.')}${S.bonus?'<p class="note ok">추천인 코드 적용 · 100P 지급</p>':''}
-    <button class="btn go" type="button" id="in">안으로 들어간다</button>`,()=>{$('#in').onclick=()=>enter(S.user)})},
+  done(){const u=S.user;mount(`<div class="hero"><div class="row burst" aria-hidden="true"><span class="twinkle" data-sprite="star:3"></span><span data-sprite="star:6"></span><span class="twinkle" data-sprite="star:3"></span></div>
+      <p class="tag">WELCOME TO PIXELOLOGY</p><p class="big">${esc(u.nick)}</p></div>
+    ${talk('들어가게.<br>오늘부터 자네도 여기 사람일세.')}
+    <dl><dt>시작 레벨</dt><dd>Lv.${u.level}</dd><dt>포인트</dt><dd><b>${u.points.toLocaleString()}P</b></dd><dt>내 추천인 코드</dt><dd>${esc(u.code)}</dd></dl>
+    ${S.bonus?'<p class="note ok">추천인 코드 적용 · 100P 지급</p>':''}
+    <button class="btn go" type="button" data-go="shop">다음</button>`)},
+
+  shop(){const u=S.user,owned=u.owned??=[];mount(`<div class="top"><p class="tag">GAME SHOP</p><p class="wallet">보유 <b>${u.points.toLocaleString()}P</b></p></div>
+    ${talk('안에서 놀 거리는<br>여기서 고르게.')}
+    <ul class="shop">${GAMES.map(g=>{const has=owned.includes(g.id),short=!has&&g.price>u.points;
+      return`<li><span class="cover" data-sprite="${g.art}" aria-hidden="true"></span><div class="info"><p class="name">${esc(g.name)}</p><p class="note">${esc(g.genre)}</p></div>
+      <button class="buy" type="button" data-game="${g.id}" ${has||short?'disabled':''}>${has?'보유 중':g.price?`${g.price.toLocaleString()}P`:'무료'}</button>
+      ${short?`<p class="note lack">${(g.price-u.points).toLocaleString()}P 부족</p>`:''}</li>`}).join('')}</ul>
+    <button class="btn go" type="button" id="in">로비로 간다</button>`,()=>{
+      $$('[data-game]').forEach(b=>b.onclick=()=>{const g=GAMES.find(x=>x.id===b.dataset.game);u.points-=g.price;owned.push(g.id);SFX.coin();screens.shop()});
+      $('#in').onclick=()=>enter(u)})},
 
   login(){mount(`${top_('title')}${talk('아는 얼굴인가.<br>이름표를 보여 주게.')}
     <form novalidate><div class="field"><label for="lem">이메일</label><input id="lem" type="email" autocomplete="username" inputmode="email" placeholder="player@email.com" value="${esc(S.email)}"></div>
@@ -312,6 +396,12 @@ const screens={
       $('form').onsubmit=e=>{e.preventDefault();const em=$('#lem').value.trim().toLowerCase(),u=auth.login(em,$('#lpw').value);
         if(!u){mark($('#lpw'),$('#lN'),'이메일 또는 비밀번호 불일치');$('#lpw').focus();return}
         S.email=em;S.user=u;Date.now()-u.seen>30*DAY?go('dormant'):enter(u)}})},
+
+  known(){mount(`<div class="hero"><p class="tag">ALREADY A PLAYER</p><p class="big">${esc(S.user.nick)}</p></div>
+    ${talk('아는 얼굴이군.<br>자네 이름은 이미 명단에 있네.')}
+    <dl><dt>레벨</dt><dd>Lv.${S.user.level} · ${S.user.xp.toLocaleString()} XP</dd><dt>포인트</dt><dd>${S.user.points.toLocaleString()}P</dd></dl>
+    <p class="note">새로 가입할 필요 없음 · 기존 계정으로 입장</p>
+    <button class="btn go" type="button" id="in">내 방으로 간다</button>`,()=>{$('#in').onclick=()=>enter(S.user)})},
 
   dormant(){const d=Math.floor((Date.now()-S.user.seen)/DAY);mount(`<div class="hero"><p class="tag">WELCOME BACK</p><p class="big">${esc(S.user.nick)}</p></div>
     ${talk(`${d}일 만이군.<br>자네 방은 치우지 않았네.`)}
@@ -334,11 +424,12 @@ const screens={
 
   lobby(){const u=S.user;mount(`<div class="hero"><p class="tag">LOBBY</p><p class="big">${esc(u.nick)}</p></div>
     <dl><dt>레벨</dt><dd>Lv.${u.level} · ${u.xp.toLocaleString()} XP</dd><dt>포인트</dt><dd><b>${u.points.toLocaleString()}P</b></dd>
-      <dt>혜택</dt><dd>${u.perks.map(p=>esc(p.name)).join(', ')||'없음'}</dd><dt>내 추천인 코드</dt><dd>${esc(u.code)}</dd></dl>
-    <div class="acts"><button class="btn alt" type="button" id="copy">코드 복사</button><button class="btn go" type="button" id="out">나가기</button></div>
+      <dt>혜택</dt><dd>${u.perks.map(p=>esc(p.name)).join(', ')||'없음'}</dd><dt>보유 게임</dt><dd>${(u.owned??[]).length}개</dd><dt>내 추천인 코드</dt><dd>${esc(u.code)}</dd></dl>
+    <button class="btn go" type="button" data-go="shop">게임 상점</button>
+    <div class="acts"><button class="btn alt" type="button" id="copy">코드 복사</button><button class="btn alt" type="button" id="out">나가기</button></div>
     <button class="link" type="button" data-go="withdraw">탈퇴</button>`,()=>{
       $('#out').onclick=()=>{S.user=null;go('title')};
-      $('#copy').onclick=e=>{const b=e.currentTarget;navigator.clipboard?.writeText(u.code).then(()=>b.textContent='복사됨',()=>b.textContent=u.code)}})},
+      $('#copy').onclick=e=>{const b=e.currentTarget;SFX.coin();navigator.clipboard?.writeText(u.code).then(()=>b.textContent='복사됨',()=>b.textContent=u.code)}})},
 
   withdraw(){const u=S.user;mount(`${top_('lobby')}${talk('가는 건 말리지 않네.<br>자리를 남겨 둘까?')}
     <form novalidate><label class="check"><input type="checkbox" id="keep">세이브 파일을 남긴다</label>
@@ -346,6 +437,14 @@ const screens={
     <button class="btn alt">탈퇴한다</button></form><button class="link" type="button" data-go="lobby">남는다</button>`,()=>{
       $('form').onsubmit=e=>{e.preventDefault();auth.withdraw(S.email,$('#keep').checked);S.user=null;go('title')}})}
 };
+// 소리: 첫 입력에서 켜고, 버튼 누름·입력칸·체크에 반응한다. 끄기 버튼은 화면 오른쪽 아래에 둔다.
+const NOTE=['..wwww','..wwww','..w..w','..w..w','www.ww','www...'];
+document.getElementById('sound').appendChild(sprite(NOTE,P,3));
+document.getElementById('sound').onclick=e=>{e.currentTarget.setAttribute('aria-pressed',SFX.toggle());SFX.tick()};
+addEventListener('pointerdown',e=>{SFX.init();if(e.target.closest('.btn,.link,.back,.mini'))SFX.press()},true);
+addEventListener('keydown',e=>{SFX.init();if(e.target.matches('input')&&(e.key.length===1||e.key==='Backspace'))SFX.type()},true);
+frame.addEventListener('focusin',e=>{if(e.target.matches('input:not([type=checkbox])'))SFX.focus()});
+frame.addEventListener('change',e=>{if(e.target.type==='checkbox')SFX.check(e.target.checked)});
 go('title');
 </script>
 </body>
